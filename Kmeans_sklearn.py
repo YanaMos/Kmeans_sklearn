@@ -1,38 +1,54 @@
-from library import helpers
-import time
-from config import env
-from library import prepare
-from library import kmeans_info
-from library import models
-import joblib
-import time
-import joblib
 from sklearn.feature_extraction.text import CountVectorizer, TfidfTransformer, TfidfVectorizer
 from sklearn.cluster import KMeans
-from config import env
-from library import helpers
-import os
 import simplejson as json
 import operator
 from sklearn.decomposition import PCA
 from sklearn.pipeline import Pipeline
 from collections import Counter
-from config import env
-
 import matplotlib
-
-matplotlib.use('Agg')
 import matplotlib.pyplot as plt
+matplotlib.use('Agg')
 
-# prepairing
-articles = helpers.read_csv_column(env.APP_DIR + 'dataset.csv', 1)
-timer = time.time()
-articles = prepare.clear_list(articles)
-print('[prepairing] Cleaned in %s' % (time.time() - timer))
-timer = time.time()
-articles = prepare.exclude_len(articles)
-timer = time.time()
-articles = prepare.stem_list(articles)
-print('[prepairing] Stematized in %s' % (time.time() - timer))
-joblib.dump(articles, env.APP_DIR + 'data/prepaired_yen.gz')
-articles = joblib.load(env.APP_DIR + 'data/prepaired_yen.gz')
+
+class Kmeans_sklearn:
+    def handle(self):
+        text = self.read_csv_column('dataset.csv', 1)
+        self.text_cleaning(text)
+
+    def text_cleaning(self, text):
+        text = self.clear_list(text)
+        text = self.exclude_len(text)
+        text = self.stem_list(text)
+        return text
+
+    def read_csv_column(self, file, column_id):
+        result = []
+        data = read_csv(file)
+        for row in data:
+            if len(row) - 1 >= column_id:
+                result.append(row[column_id])
+        return result
+
+    def clear_list(self, data):
+        for i, s in enumerate(data):
+            s = s.lower()
+            s = re.sub(r'[^a-zA-Z_ ]', '', s)
+            data[i] = re.sub(r'\s+', ' ', s)
+        return data
+
+    def exclude_len(self, data):
+        data = [s for i, s in enumerate(data) if len(s) > 500]
+        return data
+
+    def stem_list(self, data):
+        result = []
+        for i, sentence in enumerate(data):
+            words = []
+            for word in sentence.split(' '):
+                if not word:
+                    continue
+                words.append(stem_word(word))
+            result.append(' '.join(words))
+        return result
+
+
