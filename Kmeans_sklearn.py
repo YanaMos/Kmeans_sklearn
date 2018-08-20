@@ -61,8 +61,7 @@ class Kmeans_sklearn:
         kmeans_info.cluster_value(model)
         kmeans_info.top_terms_cluster(model, vectorizer, true_k)
 
-    def build_vectors(articles):
-        time_start = time.time()
+    def build_vectors(self, articles):
         vectorizer = TfidfVectorizer(analyzer='word', ngram_range=(1, 2), min_df=100, use_idf=True)
         vec = vectorizer.fit(articles)
         matrix = vectorizer.transform(articles)
@@ -72,34 +71,10 @@ class Kmeans_sklearn:
         for word, count in vectorizer.vocabulary_.items():
             vocabulary[int(count)] = word
 
-        print('vectors in %s' % (time.time() - time_start))
         return [matrix, vectorizer, vec, vocabulary]
 
-    def build_kmeans(matrix, vocabulary, true_k):
-        time_start = time.time()
-
-        # Making list from vocabulary for hashing
-        vocabulary_list = []
-        for id, word in vocabulary.items():
-            vocabulary_list.append(word + '|' + str(id))
-        vocabulary_list.sort()
-        vocabulary_hash = helpers.hash_crc32(json.dumps(vocabulary_list))
-        print('model hash: ' + vocabulary_hash)
-
-        # Building unique cache file name
-        cache_file = env.APP_DIR + 'cache/model_' + str(true_k) + '_' + vocabulary_hash + '.gz'
-
-        # Check if already cached
-        if os.path.exists(cache_file):
-            return joblib.load(cache_file)
-
+    def build_kmeans(self, matrix, true_k):
         # Build model
         model = KMeans(n_clusters=true_k, init='k-means++', n_init=10, max_iter=300, n_jobs=-1)
         model.fit(matrix)
-
-        # Caching
-        joblib.dump(model, cache_file, 9)
-        print('model in %s' % (time.time() - time_start))
         return model
-
-  
