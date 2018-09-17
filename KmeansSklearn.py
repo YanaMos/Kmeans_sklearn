@@ -1,4 +1,3 @@
-import re
 from collections import Counter
 import matplotlib
 from sklearn.cluster import KMeans
@@ -93,4 +92,4 @@ class KmeansSklearn:
         pca = PCA(n_components=true_k).fit(Z)
         data2D = pca.transform(Z)
         plt.scatter(data2D[:, 0], data2D[:, 1], c=label_color)
-        plt.savefig('/Users/yanamosiichuk/www/git_private/Kmeans_sklearn/cluster_visual.png')
+        plt.savefig('../cluster_visual.png')
